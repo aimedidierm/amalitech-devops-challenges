@@ -7,7 +7,7 @@ Solutions to the [AmaliTech DEG Project-Based DevOps Challenges](https://github.
 | # | Challenge | Description | Status |
 |---|-----------|-------------|--------|
 | 1 | [DeployReady](./DeployReady/) | Containerisation, CI/CD pipeline, cloud deployment | ✅ Done |
-| 2 | InfraBlueprint | Infrastructure as Code with Terraform | 🔜 Coming |
+| 2 | [InfraBlueprint](./InfraBlueprint/) | Infrastructure as Code with Terraform | ✅ Done |
 | 3 | WatchTower | Observability stack with Prometheus & Grafana | 🔜 Coming |
 
 ## Stack
