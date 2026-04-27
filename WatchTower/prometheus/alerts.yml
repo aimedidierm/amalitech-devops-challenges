@@ -1,0 +1,33 @@
+groups:
+  - name: reyla-alerts
+    rules:
+      - alert: ServiceDown
+        expr: up{job=~"order-service|tracking-service|notification-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.job }} has been unreachable for more than 1 minute. The /health endpoint is not responding."
+
+      - alert: HighErrorRate
+        expr: >
+          sum(rate(http_requests_total{status=~"5.."}[5m])) by (job)
+          /
+          sum(rate(http_requests_total[5m])) by (job)
+          > 0.05
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High 5xx error rate on {{ $labels.job }}"
+          description: "More than 5% of requests to {{ $labels.job }} are returning 5xx errors over the last 5 minutes. Current rate: {{ humanizePercentage $value }}."
+
+      - alert: ServiceNotScraping
+        expr: absent_over_time(up{job=~"order-service|tracking-service|notification-service"}[2m])
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus has stopped receiving metrics from a service"
+          description: "Prometheus has not received any metrics from {{ $labels.job }} for more than 2 minutes. The scrape target may have been removed or the service is completely unreachable."

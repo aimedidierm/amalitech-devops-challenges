@@ -1,0 +1,80 @@
+services:
+  order-service:
+    build: ./app/order-service
+    ports:
+      - "${ORDER_SERVICE_PORT}:3001"
+    environment:
+      - PORT=3001
+    networks:
+      - reyla-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  tracking-service:
+    build: ./app/tracking-service
+    ports:
+      - "${TRACKING_SERVICE_PORT}:3002"
+    environment:
+      - PORT=3002
+    networks:
+      - reyla-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  notification-service:
+    build: ./app/notification-service
+    ports:
+      - "${NOTIFICATION_SERVICE_PORT}:3003"
+    environment:
+      - PORT=3003
+    networks:
+      - reyla-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "${PROMETHEUS_PORT}:9090"
+    volumes:
+      - ./prometheus:/etc/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    networks:
+      - reyla-net
+    depends_on:
+      - order-service
+      - tracking-service
+      - notification-service
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana-data:/var/lib/grafana
+    networks:
+      - reyla-net
+    depends_on:
+      - prometheus
+
+networks:
+  reyla-net:
+    driver: bridge
+
+volumes:
+  grafana-data:
